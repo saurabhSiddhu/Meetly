@@ -4,6 +4,7 @@
 <head>
     <title>Meetly - Video Conferencing</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&display=swap" rel="stylesheet">
     <script lang="text/javascript" src="/socket.io/socket.io.js"></script>
     <script src="/simple-peer/simplepeer.min.js"></script>
     <style>
@@ -13,6 +14,14 @@
             --background-color: #202124;
             --control-background: #3c4043;
             --control-hover: #5f6368;
+            --border-radius: 8px;
+            --transition-speed: 0.2s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
@@ -24,30 +33,48 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         .container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             grid-auto-rows: minmax(0, 1fr);
-            gap: 8px;
-            padding: 8px;
+            gap: 12px;
+            padding: 12px;
             height: calc(100vh - 80px);
             width: 100%;
-            box-sizing: border-box;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--control-background) var(--background-color);
+        }
+
+        .container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: var(--background-color);
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background-color: var(--control-background);
+            border-radius: 4px;
         }
 
         .container video {
             width: 100%;
             height: 100%;
             background: #1a1a1a;
-            border-radius: 4px;
-            transition: all 0.3s ease;
+            border-radius: var(--border-radius);
+            transition: all var(--transition-speed) ease;
             aspect-ratio: 16/9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .container video:hover {
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
         }
 
         #localVideo {
@@ -91,18 +118,17 @@
 
         .controls {
             position: fixed;
-            bottom: 20px;
-            left: 0;
-            right: 0;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             justify-content: center;
-            gap: 8px;
-            padding: 8px;
-            background: rgba(0,0,0,0.5);
+            gap: 12px;
+            padding: 12px 24px;
+            background: rgba(32, 33, 36, 0.8);
             backdrop-filter: blur(10px);
-            border-radius: 8px;
-            margin: 0 auto;
-            width: fit-content;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             z-index: 100;
         }
 
@@ -110,54 +136,88 @@
             background-color: var(--control-background);
             border: none;
             color: white;
-            padding: 10px 20px;
-            border-radius: 4px;
+            padding: 12px;
+            border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            transition: all 0.2s ease;
+            justify-content: center;
+            transition: all var(--transition-speed) ease;
+            width: 48px;
+            height: 48px;
         }
 
         .control-button:hover {
             background-color: var(--control-hover);
+            transform: scale(1.05);
         }
 
-        .control-button.end-call {
-            background-color: var(--danger-color);
-        }
-
-        .control-button.end-call:hover {
-            background-color: #c5221f;
+        .control-button:active {
+            transform: scale(0.95);
         }
 
         .material-icons {
-            font-size: 20px;
+            font-size: 24px;
         }
 
-        /* Responsive adjustments */
+        /* Status indicators */
+        .status {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status .material-icons {
+            font-size: 16px;
+        }
+
+        /* Loading animation */
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Responsive design */
         @media (max-width: 768px) {
             .container {
                 grid-template-columns: 1fr;
-                grid-auto-rows: minmax(0, 1fr);
-                gap: 4px;
-                padding: 4px;
-            }
-
-            .container video {
-                aspect-ratio: 16/9;
+                gap: 8px;
+                padding: 8px;
             }
 
             .controls {
-                width: 100%;
-                border-radius: 0;
-                bottom: 0;
+                bottom: 16px;
+                padding: 8px 16px;
+                gap: 8px;
             }
 
             .control-button {
-                padding: 8px 12px;
-                font-size: 12px;
+                width: 40px;
+                height: 40px;
+                padding: 8px;
+            }
+
+            .material-icons {
+                font-size: 20px;
+            }
+        }
+
+        /* Dark mode enhancements */
+        @media (prefers-color-scheme: dark) {
+            .container video {
+                border: 1px solid rgba(255, 255, 255, 0.1);
             }
         }
     </style>
@@ -165,7 +225,7 @@
 
 <body>
     <div id="videos" class="container">
-            <video id="localVideo" autoplay playsinline muted></video>
+        <video id="localVideo" autoplay playsinline muted></video>
     </div>
 
     <div class="controls">
