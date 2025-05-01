@@ -213,7 +213,6 @@ function switchMedia() {
         localStream = stream
         localVideo.srcObject = stream
 
-        updateButtons()
     })
 }
 
@@ -238,7 +237,6 @@ function setScreen() {
         localVideo.srcObject = localStream
         socket.emit('removeUpdatePeer', '')
     })
-    updateButtons()
 }
 
 /**
@@ -266,16 +264,19 @@ function removeLocalStream() {
 function toggleMute() {
     for (let index in localStream.getAudioTracks()) {
         localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled
-        muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
+        const micIcon = muteButton.querySelector('.material-icons')
+        micIcon.textContent = localStream.getAudioTracks()[index].enabled ? 'mic' : 'mic_off'
     }
 }
+
 /**
  * Enable/disable video
  */
 function toggleVid() {
     for (let index in localStream.getVideoTracks()) {
         localStream.getVideoTracks()[index].enabled = !localStream.getVideoTracks()[index].enabled
-        vidButton.innerText = localStream.getVideoTracks()[index].enabled ? "Video Enabled" : "Video Disabled"
+        const videoIcon = vidButton.querySelector('.material-icons')
+        videoIcon.textContent = localStream.getVideoTracks()[index].enabled ? 'videocam' : 'videocam_off'
     }
 }
 
@@ -284,9 +285,12 @@ function toggleVid() {
  */
 function updateButtons() {
     for (let index in localStream.getVideoTracks()) {
-        vidButton.innerText = localStream.getVideoTracks()[index].enabled ? "Video Enabled" : "Video Disabled"
+        const videoIcon = vidButton.querySelector('.material-icons')
+        videoIcon.textContent = localStream.getVideoTracks()[index].enabled ? 'videocam' : 'videocam_off'
     }
     for (let index in localStream.getAudioTracks()) {
-        muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
+        const micIcon = muteButton.querySelector('.material-icons')
+        micIcon.textContent = localStream.getAudioTracks()[index].enabled ? 'mic' : 'mic_off'
     }
 }
+

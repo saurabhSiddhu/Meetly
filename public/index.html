@@ -1,56 +1,186 @@
+<!DOCTYPE html>
 <html>
 
 <head>
+    <title>Meetly - Video Conferencing</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script lang="text/javascript" src="/socket.io/socket.io.js"></script>
     <script src="/simple-peer/simplepeer.min.js"></script>
     <style>
-        .containers {
-            display: grid;
-            grid-gap: 5px;
-            grid-template-columns: repeat(auto-fit, 1fr);
-            grid-template-rows: repeat(auto-fit, 300px);
+        :root {
+            --primary-color: #1a73e8;
+            --danger-color: #d93025;
+            --background-color: #202124;
+            --control-background: #3c4043;
+            --control-hover: #5f6368;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: white;
+            font-family: 'Google Sans', Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-auto-rows: minmax(0, 1fr);
+            gap: 8px;
+            padding: 8px;
+            height: calc(100vh - 80px);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .container video {
+            width: 100%;
+            height: 100%;
+            background: #1a1a1a;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            aspect-ratio: 16/9;
+        }
+
+        .container video:hover {
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        #localVideo {
+            transform: scaleX(-1);
+        }
+
+        /* Single participant layout */
+        .container video:only-child {
+            max-width: 100%;
+            max-height: 100%;
+            aspect-ratio: 16/9;
+        }
+
+        /* Two participants layout */
+        .container video:nth-last-child(2):first-child,
+        .container video:nth-last-child(2):first-child ~ video {
+            grid-column: span 1;
+            aspect-ratio: 16/9;
+        }
+
+        /* Three participants layout */
+        .container video:nth-last-child(3):first-child,
+        .container video:nth-last-child(3):first-child ~ video {
+            grid-column: span 1;
+            aspect-ratio: 16/9;
+        }
+
+        /* Four participants layout */
+        .container video:nth-last-child(4):first-child,
+        .container video:nth-last-child(4):first-child ~ video {
+            grid-column: span 1;
+            aspect-ratio: 16/9;
+        }
+
+        /* Five or more participants layout */
+        .container video:nth-last-child(n+5):first-child,
+        .container video:nth-last-child(n+5):first-child ~ video {
+            grid-column: span 1;
+            aspect-ratio: 16/9;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
             display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            margin: 0 auto;
+            width: fit-content;
+            z-index: 100;
         }
 
-        .vid {
-            flex: 0 1 auto;
-            height: 400px;
-        }
-
-        .settings {
-            background-color: #4CAF50;
+        .control-button {
+            background-color: var(--control-background);
             border: none;
             color: white;
-            padding: 5px 10px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-            margin: 2px 2px;
+            padding: 10px 20px;
+            border-radius: 4px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .control-button:hover {
+            background-color: var(--control-hover);
+        }
+
+        .control-button.end-call {
+            background-color: var(--danger-color);
+        }
+
+        .control-button.end-call:hover {
+            background-color: #c5221f;
+        }
+
+        .material-icons {
+            font-size: 20px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-auto-rows: minmax(0, 1fr);
+                gap: 4px;
+                padding: 4px;
+            }
+
+            .container video {
+                aspect-ratio: 16/9;
+            }
+
+            .controls {
+                width: 100%;
+                border-radius: 0;
+                bottom: 0;
+            }
+
+            .control-button {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 
 <body>
     <div id="videos" class="container">
-        <video id="localVideo" class="vid" autoplay muted></video>
+            <video id="localVideo" autoplay playsinline muted></video>
     </div>
-    <br />
-    <div style="display:block">
-        <button id="switchButton" class="settings" onclick="switchMedia()">Switch
-            Camera</button>
-        <button id="muteButton" class="settings" onclick="toggleMute()">Unmuted</button>
-        <button id="vidButton" class="settings" onclick="toggleVid()">Video Enabled</button>
+
+    <div class="controls">
+        <button id="muteButton" class="control-button" onclick="toggleMute()">
+            <span class="material-icons">mic</span>
+        </button>
+        <button id="vidButton" class="control-button" onclick="toggleVid()">
+            <span class="material-icons">videocam</span>
+        </button>
+        <button id="switchButton" class="control-button" onclick="switchMedia()">
+            <span class="material-icons">flip_camera_ios</span>
+        </button>
     </div>
+
+    <script src="/js/main.js"></script>
 </body>
-<footer>
-    <script src='/js/main.js' lang="text/javascript"></script>
-
-
-</footer>
 
 </html>
